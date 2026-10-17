@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Easy IE — Garment IE Management System</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#16234f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Easy IE">
+<link rel="apple-touch-icon" href="icon-180.png">
+<script src="lib/chart.umd.min.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --navy:#16234f;
+    --navy2:#1e3a70;
+    --blue-light:#eaf1fb;
+    --blue-mid:#dbe8fb;
+    --green:#16a34a;
+    --green-dark:#128a3e;
+    --amber:#f3c56a;
+    --amber-dark:#e0a83a;
+    --red:#dc4b4b;
+    --gray-50:#f7f8fa;
+    --gray-100:#eef1f5;
+    --gray-200:#e2e6ec;
+    --gray-400:#98a2b3;
+    --gray-500:#667085;
+    --gray-700:#344054;
+    --ink:#1a2233;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+    background:var(--gray-50);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  .app{ max-width:480px; margin:0 auto; min-height:100vh; background:#fff; position:relative; box-shadow:0 0 40px rgba(0,0,0,0.06); }
+  .page{ display:none; min-height:100vh; padding-bottom:30px; }
+  .page.active{ display:block; }
+  h1,h2,h3{ font-family:'Poppins',sans-serif; margin:0; }
+  button{ font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif; cursor:pointer; border:none; }
+  input, select{ font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif; }
+
+  /* ---------- Header bar ---------- */
+  .topbar{
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff;
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .topbar .tb-left{ display:flex; align-items:center; gap:10px; }
+  .topbar .back-btn{ background:transparent; color:#fff; font-size:18px; padding:4px; opacity:0.85; }
+  .topbar h2{ font-size:15px; letter-spacing:0.5px; text-transform:uppercase; }
+  .topbar .tb-sub{ font-size:11px; opacity:0.7; text-transform:uppercase; letter-spacing:0.5px; }
+  .topbar .tb-name{ font-size:16px; font-weight:700; font-family:'Poppins',sans-serif; }
+  .tb-actions{ display:flex; gap:8px; align-items:center; }
+  .chip-btn{
+    background:rgba(255,255,255,0.14);
+    color:#fff;
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:12px;
+    font-weight:700;
+    display:flex; align-items:center; gap:6px;
+  }
+  .chip-btn.green{ background:var(--green); }
+  .icon-btn{
+    background:rgba(255,255,255,0.14);
+    color:#fff;
+    border-radius:8px;
+    width:34px; height:34px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+  }
+
+  /* ---------- Login ---------- */
+  #page-login{ display:flex; align-items:center; justify-content:center; min-height:100vh; padding:30px 26px; }
+  .login-box{ width:100%; text-align:center; }
+  .login-logo{
+    width:76px; height:76px; border-radius:50%;
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 18px;
+    font-size:32px; color:#fff;
+  }
+  .login-box h1{ font-size:26px; color:var(--navy); letter-spacing:1px; }
+  .login-box .sub{ color:var(--gray-400); font-size:13px; letter-spacing:1px; margin-top:4px; margin-bottom:28px; text-transform:uppercase; }
+  .field{ text-align:left; margin-bottom:16px; }
+  .field label{ display:block; font-size:12px; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; padding:13px 14px; border-radius:10px; border:1.5px solid var(--gray-200);
+    font-size:14px; color:var(--ink); background:#fff;
+  }
+  .field input:focus, .field select:focus{ outline:none; border-color:var(--navy2); }
+  .pw-wrap{ position:relative; }
+  .pw-wrap .toggle-eye{ position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; color:var(--gray-400); font-size:16px; }
+  .btn-primary{
+    width:100%; background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff;
+    padding:15px; border-radius:10px; font-weight:700; font-size:14px; letter-spacing:0.5px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-primary:active{ transform:scale(0.99); }
+  .btn-primary:disabled{ opacity:0.5; cursor:not-allowed; }
+  .login-hint{ margin-top:22px; color:var(--gray-400); font-size:12.5px; }
+  .login-demo{ margin-top:44px; color:var(--gray-200); font-size:12px; }
+  .login-error{ color:var(--red); font-size:12.5px; margin-top:-6px; margin-bottom:14px; display:none; }
+
+  /* ---------- Menu ---------- */
+  .menu-wrap{ padding:20px 18px; }
+  .menu-label{
+    width:100%; text-align:center; padding:12px; border:1.5px solid var(--navy);
+    border-radius:10px; font-weight:800; letter-spacing:3px; color:var(--navy); font-size:13px; margin-bottom:16px;
+  }
+  .menu-btn{
+    width:100%; text-align:left; padding:18px 18px; border-radius:12px; margin-bottom:12px;
+    display:flex; align-items:center; gap:12px; font-weight:700; font-size:15px;
+    background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff;
+  }
+  .menu-btn .ico{ font-size:20px; }
+  .menu-btn.soon{ background:var(--gray-100); color:var(--gray-400); cursor:default; }
+  .menu-btn.soon .soon-tag{ margin-left:auto; font-size:11px; font-weight:600; color:var(--gray-400); }
+  .menu-footer{ text-align:center; color:var(--gray-400); font-size:11.5px; margin-top:30px; }
+
+  /* ---------- Forms (Study Setup) ---------- */
+  .form-wrap{ padding:20px 18px 100px; }
+  .section-label{ display:flex; align-items:center; gap:8px; font-weight:800; color:var(--navy); font-size:13px; letter-spacing:0.5px; text-transform:uppercase; margin:18px 0 10px; }
+  .section-label .bar{ width:4px; height:16px; background:var(--navy2); border-radius:2px; }
+  .card-block{ background:var(--gray-50); border:1px solid var(--gray-100); border-radius:12px; padding:16px; }
+  .row2{ display:flex; gap:12px; }
+  .row2 .field{ flex:1; }
+  .fixed-bottom{
+    position:sticky; bottom:0; background:#fff; padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--gray-100);
+  }
+
+  /* ---------- Timer / Study ---------- */
+  .study-meta{
+    background:var(--blue-light); padding:12px 18px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .study-meta .op-name{ font-weight:700; color:var(--navy); font-size:14px; }
+  .study-meta .op-role{ color:var(--navy2); font-size:12px; }
+  .study-meta .meta-right{ text-align:right; color:var(--gray-500); font-size:12px; }
+  .clock-wrap{ display:flex; flex-direction:column; align-items:center; padding:26px 18px 10px; }
+  .clock-face{ width:220px; height:220px; }
+  .big-time{ font-family:'IBM Plex Mono',monospace; font-size:38px; font-weight:700; color:var(--navy); margin-top:14px; letter-spacing:1px; }
+  .status-label{ color:var(--gray-400); font-size:12px; letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
+  .timer-btns{ display:flex; gap:10px; margin-top:20px; }
+  .tbtn{ padding:12px 22px; border-radius:10px; font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .tbtn.start{ background:var(--green); color:#fff; }
+  .tbtn.start:disabled{ opacity:0.45; }
+  .tbtn.pause{ background:var(--amber); color:#6b4e12; }
+  .tbtn.pause:disabled{ opacity:0.45; }
+  .tbtn.reset{ background:var(--gray-100); color:var(--gray-500); padding:12px 14px; }
+  .stat-cards{ display:flex; gap:10px; padding:20px 18px 6px; }
+  .stat-card{ flex:1; background:var(--blue-light); border-radius:10px; padding:12px; text-align:center; }
+  .stat-card .sv{ font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--navy); font-size:18px; }
+  .stat-card .sl{ font-size:10px; color:var(--navy2); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+  .readings-label{ padding:16px 18px 6px; font-weight:800; color:var(--navy); font-size:12.5px; letter-spacing:0.5px; text-transform:uppercase; }
+  .readings-list{ padding:0 18px; display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; }
+  .reading-row{ background:var(--gray-50); border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:12px; }
+  .reading-row .rn{ width:24px; height:24px; border-radius:50%; background:var(--navy); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .reading-row .rmeta{ flex:1; }
+  .reading-row .rmeta .rtitle{ font-weight:700; font-size:13px; color:var(--ink); }
+  .reading-row .rmeta .rtime{ font-size:11px; color:var(--gray-400); }
+  .reading-row .rdur{ font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--navy); font-size:14px; }
+  .finish-bar{ padding:16px 18px calc(16px + env(safe-area-inset-bottom)); }
+  .finish-btn{ width:100%; background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff; padding:15px; border-radius:10px; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .finish-btn:disabled{ opacity:0.4; }
+  .empty-hint{ text-align:center; color:var(--gray-400); font-size:12.5px; padding:14px 30px; }
+
+  /* ---------- Reports ---------- */
+  .reports-wrap{ padding:18px; }
+  .summary-cards{ display:flex; gap:10px; margin-bottom:16px; }
+  .summary-cards .sc{ flex:1; background:var(--blue-light); border-radius:10px; padding:14px 8px; text-align:center; }
+  .summary-cards .sc .scv{ font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--navy); font-size:19px; }
+  .summary-cards .sc .scl{ font-size:10px; color:var(--navy2); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+  .tabbar{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .tabbtn{ padding:10px 14px; border-radius:9px; font-weight:700; font-size:12px; background:var(--gray-100); color:var(--gray-500); display:flex; align-items:center; gap:6px; }
+  .tabbtn.active{ background:var(--navy); color:#fff; }
+  .rpt-h3{ font-size:13px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:0.5px; margin:6px 0 10px; }
+  .rpt-sub{ font-size:11.5px; color:var(--gray-400); margin:-6px 0 14px; }
+  .rpt-head-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:6px 0 10px; }
+  .rpt-head-row .rpt-h3{ margin:0; }
+  .rpt-export-btn{
+    background:var(--green); color:#fff; border-radius:8px; padding:6px 11px; font-size:10.5px; font-weight:700;
+    display:flex; align-items:center; gap:5px; white-space:nowrap; flex-shrink:0;
+  }
+  table.data-tbl{ width:100%; border-collapse:collapse; font-size:12px; }
+  table.data-tbl th{ background:var(--navy); color:#fff; padding:9px 8px; text-align:left; white-space:nowrap; position:sticky; top:0; }
+  table.data-tbl td{ padding:8px; border-bottom:1px solid var(--gray-100); white-space:nowrap; }
+  table.data-tbl tr:nth-child(even) td{ background:var(--gray-50); }
+  .tbl-scroll{ overflow-x:auto; border-radius:10px; border:1px solid var(--gray-100); max-height:360px; overflow-y:auto; }
+  .chart-box{ position:relative; height:230px; margin-bottom:10px; }
+  .op-summary-row{ background:var(--gray-50); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .op-summary-row .osn{ width:24px; height:24px; border-radius:50%; background:var(--navy); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .op-summary-row .osmeta{ flex:1; }
+  .op-summary-row .osmeta .ostitle{ font-weight:700; font-size:13px; }
+  .op-summary-row .osmeta .ossub{ font-size:11px; color:var(--gray-400); }
+  .op-summary-row .osright{ text-align:right; }
+  .op-summary-row .osright .osct{ font-weight:700; color:var(--navy); font-size:13px; }
+  .op-summary-row .osright .oscap{ font-size:11px; color:var(--green-dark); font-weight:700; }
+  .empty-state{ text-align:center; color:var(--gray-400); padding:50px 20px; font-size:13px; }
+  .empty-state .es-ico{ font-size:34px; margin-bottom:10px; }
+
+  /* ---------- Calculation result cards ---------- */
+  .calc-result{ margin-top:20px; background:var(--blue-light); border-radius:14px; padding:20px 18px; text-align:center; }
+  .calc-result .cr-big{ font-family:'IBM Plex Mono',monospace; font-size:38px; font-weight:700; color:var(--navy); line-height:1; }
+  .calc-result .cr-tag{ font-size:11px; color:var(--navy2); font-weight:700; letter-spacing:1px; margin-top:6px; text-transform:uppercase; }
+  .calc-result.warn .cr-big{ color:var(--amber-dark); }
+  .calc-result.bad .cr-big{ color:var(--red); }
+  .calc-result .cr-breakdown{ margin-top:16px; text-align:left; border-top:1px solid var(--blue-mid); padding-top:12px; }
+  .calc-result .cr-row{ display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--gray-500); padding:5px 0; gap:10px; }
+  .calc-result .cr-row b{ color:var(--ink); font-family:'IBM Plex Mono',monospace; font-size:13px; white-space:nowrap; }
+
+  /* ---------- Changeover Tracking ---------- */
+  .badge-count{
+    background:#fff; color:var(--navy); border-radius:20px; min-width:18px; height:18px; padding:0 5px;
+    font-size:10px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; margin-left:6px;
+  }
+  .co-process-row{ background:var(--gray-50); border-radius:12px; padding:13px 14px; margin-bottom:10px; }
+  .co-process-row .cpr-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .co-process-row .cpr-name{ font-weight:700; font-size:14px; color:var(--ink); }
+  .co-process-row .cpr-sub{ font-size:11.5px; color:var(--gray-400); margin-top:2px; }
+  .co-status{ font-size:10px; font-weight:800; padding:4px 9px; border-radius:20px; white-space:nowrap; text-transform:uppercase; letter-spacing:0.3px; }
+  .co-status.mech-run{ background:#fdecc8; color:#8a5a10; }
+  .co-status.mech-done{ background:var(--blue-mid); color:var(--navy2); }
+  .co-status.tech-run{ background:#d7f3e3; color:#0f7a3d; }
+  .co-status.complete{ background:#e2e6ec; color:var(--gray-500); }
+  .co-process-row .cpr-timer{ font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--navy); font-size:15px; margin-top:8px; }
+  .empty-mini{ text-align:center; color:var(--gray-400); font-size:12.5px; padding:26px 20px; }
+
+  .co-tabbar{ display:flex; gap:8px; padding:14px 18px 0; }
+  .co-detail-head{ background:var(--blue-light); padding:14px 18px; }
+  .co-detail-head .cdh-name{ font-weight:800; color:var(--navy); font-size:16px; }
+  .co-detail-head .cdh-sub{ font-size:12px; color:var(--navy2); margin-top:3px; }
+
+  .timeline{ padding:16px 18px; }
+  .tl-step{ display:flex; gap:12px; margin-bottom:4px; }
+  .tl-step .tl-dot-wrap{ display:flex; flex-direction:column; align-items:center; width:22px; }
+  .tl-step .tl-dot{ width:14px; height:14px; border-radius:50%; background:var(--gray-200); border:2px solid var(--gray-200); flex-shrink:0; margin-top:2px; }
+  .tl-step.done .tl-dot{ background:var(--green); border-color:var(--green); }
+  .tl-step.active .tl-dot{ background:#fff; border-color:var(--amber-dark); }
+  .tl-step .tl-line{ width:2px; flex:1; background:var(--gray-200); min-height:34px; }
+  .tl-step.done .tl-line{ background:var(--green); }
+  .tl-step-body{ flex:1; padding-bottom:18px; }
+  .tl-step-body .tl-label{ font-weight:700; font-size:13px; color:var(--ink); }
+  .tl-step-body .tl-time{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--gray-500); margin-top:2px; }
+  .tl-step-body .tl-actions{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+  .tl-btn{ padding:9px 14px; border-radius:9px; font-weight:700; font-size:12px; background:var(--navy); color:#fff; }
+  .tl-btn.photo{ background:var(--gray-100); color:var(--gray-500); display:flex; align-items:center; gap:5px; }
+  .tl-photos{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .tl-photos img{ width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid var(--gray-200); }
+  .total-setting-box{ margin:0 18px 18px; background:var(--blue-light); border-radius:12px; padding:16px; text-align:center; }
+  .total-setting-box .tsb-val{ font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; color:var(--navy); }
+  .total-setting-box .tsb-label{ font-size:11px; color:var(--navy2); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-top:3px; }
+
+  /* ---------- Record button & report filter ---------- */
+  .tbtn.record{ background:var(--navy); color:#fff; }
+  .tbtn.record:disabled{ opacity:0.4; }
+  .rpt-filter-row{ margin-bottom:14px; }
+  .rpt-filter-row select{ width:100%; padding:11px 12px; border-radius:9px; border:1.5px solid var(--gray-200); font-size:13px; background:#fff; color:var(--ink); }
+  .line-cap-box{ margin-top:14px; background:var(--navy); border-radius:12px; padding:16px 18px; text-align:center; }
+  .line-cap-box .lcb-val{ font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; color:#fff; }
+  .line-cap-box .lcb-label{ font-size:11px; color:rgba(255,255,255,0.75); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-top:4px; }
+  .line-cap-box .lcb-sub{ font-size:11.5px; color:rgba(255,255,255,0.6); margin-top:6px; }
+
+  /* ---------- Capacity Chart ---------- */
+  .cap-line-row{ background:var(--gray-50); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .cap-line-row .cln{ width:36px; height:36px; border-radius:8px; background:var(--navy); color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; text-align:center; line-height:1.15; }
+  .cap-line-row .clmeta{ flex:1; }
+  .cap-line-row .clmeta .cltitle{ font-weight:700; font-size:13px; color:var(--ink); }
+  .cap-line-row .clmeta .clsub{ font-size:11px; color:var(--gray-400); }
+  .cap-line-row .clright{ text-align:right; font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--green-dark); font-size:15px; }
+  .cap-line-row .clright .clunit{ font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif; font-weight:600; font-size:9.5px; color:var(--gray-400); display:block; }
+
+  /* ---------- Changeover Calendar ---------- */
+  .cal-nav{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px 4px; }
+  .cal-nav button{ background:var(--gray-100); color:var(--navy); width:34px; height:34px; border-radius:9px; font-size:15px; font-weight:700; }
+  .cal-nav .cal-month-label{ font-weight:800; color:var(--navy); font-size:15px; font-family:'Poppins',sans-serif; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; padding:14px 18px; }
+  .cal-dow{ text-align:center; font-size:10px; font-weight:800; color:var(--gray-400); text-transform:uppercase; padding-bottom:4px; }
+  .cal-cell{ aspect-ratio:1; border-radius:9px; background:var(--gray-50); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--ink); position:relative; cursor:pointer; border:1.5px solid transparent; }
+  .cal-cell.blank{ background:transparent; cursor:default; }
+  .cal-cell.today{ border-color:var(--navy2); }
+  .cal-cell.selected{ background:var(--navy); color:#fff; }
+  .cal-cell .cal-dot{ width:5px; height:5px; border-radius:50%; background:var(--green); margin-top:3px; }
+  .cal-cell.selected .cal-dot{ background:#fff; }
+  .cal-day-panel{ padding:6px 18px 24px; }
+  .cal-day-title{ font-weight:800; color:var(--navy); font-size:13px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
+  .cal-event-row{ background:var(--gray-50); border-radius:10px; padding:11px 13px; display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .cal-event-row .cev-text{ flex:1; font-size:13px; color:var(--ink); }
+  .cal-event-row .cev-del{ background:none; color:var(--red); font-size:14px; padding:2px 4px; }
+  .cal-add-row{ display:flex; gap:8px; margin-top:6px; }
+  .cal-add-row input{ flex:1; padding:12px 13px; border-radius:9px; border:1.5px solid var(--gray-200); font-size:13px; }
+  .cal-add-row button{ background:var(--navy); color:#fff; padding:0 16px; border-radius:9px; font-weight:700; font-size:13px; }
+  .cal-empty-hint{ text-align:center; color:var(--gray-400); font-size:12px; padding:10px 20px; }
+
+  ::-webkit-scrollbar{ width:6px; height:6px; }
+  ::-webkit-scrollbar-thumb{ background:var(--gray-200); border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ LOGIN ============ -->
+  <div class="page active" id="page-login">
+    <div class="login-box">
+      <div class="login-logo">⏱</div>
+      <h1>EASY IE</h1>
+      <div class="sub">Garment IE Management System</div>
+      <div class="field">
+        <label>Username</label>
+        <input id="loginUser" type="text" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+          <button class="toggle-eye" id="togglePw" type="button">👁</button>
+        </div>
+      </div>
+      <div class="login-error" id="loginError">Incorrect username or password.</div>
+      <button class="btn-primary" id="loginBtn">LOGIN</button>
+      <div class="login-hint">Forgot Password? Contact Admin</div>
+      <div class="login-demo">Demo: admin / admin123</div>
+    </div>
+  </div>
+
+  <!-- ============ MENU ============ -->
+  <div class="page" id="page-menu">
+    <div class="topbar">
+      <div class="tb-left">
+        <div>
+          <div class="tb-sub">Welcome back</div>
+          <div class="tb-name" id="menuUserName">ADMIN</div>
+        </div>
+      </div>
+      <button class="chip-btn" id="logoutBtn">⏻ LOGOUT</button>
+    </div>
+    <div class="menu-wrap">
+      <div class="menu-label">MENU</div>
+      <button class="menu-btn" id="goStudy"><span class="ico">⏱</span> IE STUDY</button>
+      <button class="menu-btn" id="goReports"><span class="ico">📊</span> REPORTS</button>
+      <button class="menu-btn" id="goCapacityChart"><span class="ico">📈</span> CAPACITY CHART</button>
+      <button class="menu-btn" id="goCalc"><span class="ico">🧮</span> CALCULATIONS</button>
+      <button class="menu-btn" id="goChangeover"><span class="ico">🔧</span> CHANGEOVER TRACKING</button>
+      <button class="menu-btn" id="goChangeoverCalendar"><span class="ico">📅</span> CHANGEOVER CALENDAR</button>
+      <div class="menu-footer">EASY IE · v1.0</div>
+    </div>
+  </div>
+
+  <!-- ============ IE STUDY SETUP ============ -->
+  <div class="page" id="page-setup">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-menu">←</button>
+        <h2>IE Study Setup</h2>
+      </div>
+    </div>
+    <div class="form-wrap">
+      <div class="section-label"><span class="bar"></span>DETAILS</div>
+      <div class="card-block">
+        <div class="field"><label>Style Name *</label><input id="f-style" placeholder="e.g. PO-2024-POLO"></div>
+        <div class="field"><label>Line No *</label><input id="f-line" placeholder="e.g. 5"></div>
+        <div class="row2">
+          <div class="field"><label>Date</label><input id="f-date" type="date"></div>
+          <div class="field"><label>IE Officer</label><input id="f-officer" placeholder="ADMIN"></div>
+        </div>
+      </div>
+
+      <div class="section-label"><span class="bar"></span>OPERATOR DETAILS</div>
+      <div class="card-block">
+        <div class="row2">
+          <div class="field"><label>Employee ID *</label><input id="f-empid" placeholder="e.g. 4587"></div>
+          <div class="field"><label>SAM</label><input id="f-sam" type="number" step="0.01" placeholder="e.g. 0.72"></div>
+        </div>
+        <div class="field"><label>Operator Name *</label><input id="f-opname" placeholder="e.g. Fatema Begum"></div>
+        <div class="field"><label>Operation *</label><input id="f-operation" placeholder="e.g. Side Seam"></div>
+        <div class="field"><label>Allowance % (default 10%, editable)</label><input id="f-allowance" type="number" step="0.1" min="0" value="10" placeholder="10"></div>
+        <div class="field">
+          <label>Machine Type</label>
+          <select id="f-machine">
+            <option>Single Needle Lock Stitch (SNLS)</option>
+            <option>Overlock</option>
+            <option>Flatlock</option>
+            <option>Bartack</option>
+            <option>Button Hole / Button Attach</option>
+            <option>Manual / Iron</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="fixed-bottom">
+      <button class="btn-primary" id="startStudyBtn">▶ START STUDY</button>
+    </div>
+  </div>
+
+  <!-- ============ STUDY TIMER ============ -->
+  <div class="page" id="page-timer">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-setup">←</button>
+        <h2>Study</h2>
+      </div>
+      <span id="timerDot" style="width:9px;height:9px;border-radius:50%;background:#5a6b94;"></span>
+    </div>
+    <div class="study-meta">
+      <div>
+        <div class="op-name" id="metaOpName">—</div>
+        <div class="op-role" id="metaOperation">—</div>
+      </div>
+      <div class="meta-right">
+        <div id="metaLine">Line —</div>
+        <div id="metaDate">—</div>
+      </div>
+    </div>
+    <div class="clock-wrap">
+      <svg class="clock-face" viewBox="0 0 220 220" id="clockSvg">
+        <circle cx="110" cy="110" r="104" fill="#fff" stroke="#16234f" stroke-width="2.5"/>
+        <g id="ticks"></g>
+        <text x="110" y="34" text-anchor="middle" font-size="11" fill="#16234f" font-family="IBM Plex Mono">60</text>
+        <text x="186" y="115" text-anchor="middle" font-size="11" fill="#16234f" font-family="IBM Plex Mono">15</text>
+        <text x="110" y="196" text-anchor="middle" font-size="11" fill="#16234f" font-family="IBM Plex Mono">30</text>
+        <text x="34" y="115" text-anchor="middle" font-size="11" fill="#16234f" font-family="IBM Plex Mono">45</text>
+        <line id="secHand" x1="110" y1="110" x2="110" y2="30" stroke="#dc4b4b" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="110" cy="110" r="4" fill="#16234f"/>
+      </svg>
+      <div class="big-time" id="bigTime">00:00.00</div>
+      <div class="status-label" id="statusLabel">READY</div>
+      <div class="timer-btns">
+        <button class="tbtn start" id="startBtn">▶ START</button>
+        <button class="tbtn pause" id="pauseBtn" disabled>❚❚ PAUSE</button>
+        <button class="tbtn record" id="recordBtn" disabled>● RECORD</button>
+        <button class="tbtn reset" id="resetBtn" title="Reset">↺</button>
+      </div>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="sv" id="statReadings">0</div><div class="sl">Readings</div></div>
+      <div class="stat-card"><div class="sv" id="statAvg">0s</div><div class="sl">Avg CT</div></div>
+      <div class="stat-card"><div class="sv" id="statBest">0s</div><div class="sl">Best</div></div>
+    </div>
+    <div class="readings-label">Cycle Readings</div>
+    <div class="readings-list" id="readingsList"></div>
+    <div class="empty-hint" id="readingsEmptyHint">Press START then PAUSE to record cycle times</div>
+    <div class="finish-bar">
+      <button class="finish-btn" id="finishBtn" disabled>✓ FINISH &amp; SAVE (<span id="finishCount">0</span> READINGS)</button>
+    </div>
+  </div>
+
+  <!-- ============ REPORTS ============ -->
+  <div class="page" id="page-reports">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-menu">←</button>
+        <h2>Reports</h2>
+      </div>
+      <div class="tb-actions">
+        <button class="chip-btn green" id="exportExcelBtn">⬇ EXCEL</button>
+        <button class="icon-btn" id="clearDataBtn" title="Clear all data">🗑</button>
+      </div>
+    </div>
+    <div class="reports-wrap">
+      <div class="field rpt-filter-row">
+        <label>Filter by Line</label>
+        <select id="reportLineFilter"><option value="all">All Lines</option></select>
+      </div>
+      <div class="summary-cards" id="ieSummaryCards">
+        <div class="sc"><div class="scv" id="sumSessions">0</div><div class="scl">Sessions</div></div>
+        <div class="sc"><div class="scv" id="sumReadings">0</div><div class="scl">Readings</div></div>
+        <div class="sc"><div class="scv" id="sumAvgCt">0s</div><div class="scl">Avg CT</div></div>
+      </div>
+      <div class="tabbar">
+        <button class="tabbtn active" data-tab="table">⊞ Data Table</button>
+        <button class="tabbtn" data-tab="yamazumi">📶 Yamazumi Chart</button>
+        <button class="tabbtn" data-tab="bulletin">📋 Line Balancing Sheet</button>
+        <button class="tabbtn" data-tab="changeover">🔧 Changeover</button>
+      </div>
+
+      <div id="tab-table">
+        <div class="rpt-head-row">
+          <div class="rpt-h3">All Cycle Readings</div>
+          <button class="rpt-export-btn" id="exportTableBtn">⬇ Excel</button>
+        </div>
+        <div class="tbl-scroll">
+          <table class="data-tbl" id="readingsTable">
+            <thead><tr><th>Date</th><th>Operator</th><th>Operation</th><th>#</th><th>Start</th><th>End</th><th>CT (s)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-yamazumi" style="display:none;">
+        <div class="rpt-head-row">
+          <div class="rpt-h3">Yamazumi Chart</div>
+          <button class="rpt-export-btn" id="exportYamazumiBtn">⬇ Excel</button>
+        </div>
+        <div class="rpt-sub" id="yamazumiSub">Average cycle time by operation</div>
+        <div class="chart-box"><canvas id="yamazumiChart"></canvas></div>
+        <div class="rpt-h3" style="margin-top:18px;">Operation Summary</div>
+        <div id="opSummaryList"></div>
+        <div class="line-cap-box" id="lineCapBox" style="display:none;">
+          <div class="lcb-val" id="lineCapVal">0</div>
+          <div class="lcb-label">Line Capacity (pcs/hr)</div>
+          <div class="lcb-sub" id="lineCapSub">—</div>
+        </div>
+      </div>
+
+      <div id="tab-bulletin" style="display:none;">
+        <div class="rpt-head-row">
+          <div class="rpt-h3">Line Balancing / Operation Bulletin</div>
+          <button class="rpt-export-btn" id="exportBulletinBtn">⬇ Excel</button>
+        </div>
+        <div class="rpt-sub">CT1–CT5 = first five cycle readings per operator &amp; operation. Capacity = 3600 ÷ (Avg CT × 1.10). Eff% = SAM×60 ÷ Avg CT.</div>
+        <div class="tbl-scroll">
+          <table class="data-tbl" id="bulletinTable">
+            <thead><tr>
+              <th>S.No</th><th>Operation</th><th>Card No</th><th>Name</th>
+              <th>CT1</th><th>CT2</th><th>CT3</th><th>CT4</th><th>CT5</th>
+              <th>Avg CT</th><th>+10% Allow</th><th>Capacity/hr</th><th>SAM</th><th>Eff%</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-changeover" style="display:none;">
+        <div class="rpt-head-row">
+          <div class="rpt-h3">Changeover / Setting Time Report</div>
+          <button class="rpt-export-btn" id="exportChangeoverBtn">⬇ Excel</button>
+        </div>
+        <div class="rpt-sub">Total Setting Time = Mechanic Start → Technical End. Only completed processes are included.</div>
+        <div class="summary-cards" id="coSummaryCards">
+          <div class="sc"><div class="scv" id="coSumCount">0</div><div class="scl">Completed</div></div>
+          <div class="sc"><div class="scv" id="coSumAvg">0s</div><div class="scl">Avg Setting Time</div></div>
+          <div class="sc"><div class="scv" id="coSumOngoing">0</div><div class="scl">Still Ongoing</div></div>
+        </div>
+        <div class="tbl-scroll">
+          <table class="data-tbl" id="changeoverTable">
+            <thead><tr>
+              <th>Date</th><th>Process</th><th>Line</th><th>Style</th><th>Operator</th><th>IE</th>
+              <th>Mechanic Start</th><th>Mechanic End</th><th>Technical Start</th><th>Technical End</th><th>Total Setting Time</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="empty-mini" id="changeoverEmpty" style="display:none;">No completed changeover processes yet.</div>
+      </div>
+
+      <div class="empty-state" id="reportsEmpty" style="display:none;">
+        <div class="es-ico">📭</div>
+        No study data yet.<br>Run an IE Study first to see reports here.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CALCULATIONS MENU ============ -->
+  <div class="page" id="page-calc-menu">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-menu">←</button>
+        <h2>Calculations</h2>
+      </div>
+    </div>
+    <div class="menu-wrap">
+      <button class="menu-btn" id="goCalcEfficiency"><span class="ico">⚙️</span> EFFICIENCY</button>
+      <button class="menu-btn" id="goCalcManpower"><span class="ico">👥</span> MANPOWER</button>
+      <button class="menu-btn" id="goCalcCapacity"><span class="ico">🏭</span> PRODUCTION CAPACITY</button>
+      <button class="menu-btn" id="goCalcSmv"><span class="ico">⏳</span> SMV</button>
+    </div>
+  </div>
+
+  <!-- ============ EFFICIENCY CALCULATOR ============ -->
+  <div class="page" id="page-calc-efficiency">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-calc-menu">←</button>
+        <h2>Efficiency</h2>
+      </div>
+    </div>
+    <div class="form-wrap">
+      <div class="section-label"><span class="bar"></span>INPUTS</div>
+      <div class="card-block">
+        <div class="field"><label>Date</label><input id="eff-date" type="date"></div>
+        <div class="field"><label>Output / Proposed Output (pcs)</label><input id="eff-output" type="number" step="any" placeholder="e.g. 480"></div>
+        <div class="field"><label>SMV of Style / Process (min)</label><input id="eff-smv" type="number" step="any" placeholder="e.g. 0.72"></div>
+        <div class="row2">
+          <div class="field"><label>Number of Operators</label><input id="eff-operators" type="number" step="any" placeholder="e.g. 8"></div>
+          <div class="field"><label>Working Minutes</label><input id="eff-workmin" type="number" step="any" placeholder="e.g. 480"></div>
+        </div>
+      </div>
+      <button class="btn-primary" id="eff-calc-btn" style="margin-top:6px;">CALCULATE</button>
+
+      <div class="calc-result" id="eff-result" style="display:none;">
+        <div class="cr-big" id="eff-pct">0%</div>
+        <div class="cr-tag" id="eff-tag">—</div>
+        <div class="cr-breakdown">
+          <div class="cr-row"><span>Date</span><b id="eff-date-out">—</b></div>
+          <div class="cr-row"><span>Earned Minutes (Output × SMV)</span><b id="eff-earned">0</b></div>
+          <div class="cr-row"><span>Available Minutes (Operators × Working Min)</span><b id="eff-available">0</b></div>
+          <div class="cr-row"><span>Efficiency % (Earned ÷ Available × 100)</span><b id="eff-pct2">0%</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MANPOWER CALCULATOR ============ -->
+  <div class="page" id="page-calc-manpower">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-calc-menu">←</button>
+        <h2>Manpower</h2>
+      </div>
+    </div>
+    <div class="form-wrap">
+      <div class="section-label"><span class="bar"></span>INPUTS</div>
+      <div class="card-block">
+        <div class="field"><label>Date</label><input id="mp-date" type="date"></div>
+        <div class="field"><label>Target / Required Output (pcs)</label><input id="mp-output" type="number" step="any" placeholder="e.g. 600"></div>
+        <div class="field"><label>SMV of Style / Process (min)</label><input id="mp-smv" type="number" step="any" placeholder="e.g. 0.72"></div>
+        <div class="field"><label>Working Minutes (per operator)</label><input id="mp-workmin" type="number" step="any" placeholder="e.g. 480"></div>
+      </div>
+      <div class="rpt-sub" style="margin-top:10px;">Operators Required = (Target Output × SMV) ÷ Working Minutes</div>
+      <button class="btn-primary" id="mp-calc-btn" style="margin-top:6px;">CALCULATE</button>
+
+      <div class="calc-result" id="mp-result" style="display:none;">
+        <div class="cr-big" id="mp-count">0</div>
+        <div class="cr-tag">OPERATORS REQUIRED</div>
+        <div class="cr-breakdown">
+          <div class="cr-row"><span>Date</span><b id="mp-date-out">—</b></div>
+          <div class="cr-row"><span>Exact calculated value</span><b id="mp-exact">0</b></div>
+          <div class="cr-row"><span>Rounded up (whole operators)</span><b id="mp-rounded">0</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PRODUCTION CAPACITY CALCULATOR ============ -->
+  <div class="page" id="page-calc-capacity">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-calc-menu">←</button>
+        <h2>Production Capacity</h2>
+      </div>
+    </div>
+    <div class="form-wrap">
+      <div class="section-label"><span class="bar"></span>INPUTS</div>
+      <div class="card-block">
+        <div class="field"><label>Date</label><input id="cap-date" type="date"></div>
+        <div class="field"><label>Operators</label><input id="cap-operators" type="number" step="any" placeholder="e.g. 8"></div>
+        <div class="field"><label>Working Minutes (estimated)</label><input id="cap-workmin" type="number" step="any" placeholder="e.g. 480"></div>
+        <div class="field"><label>SMV</label><input id="cap-smv" type="number" step="any" placeholder="e.g. 0.72"></div>
+      </div>
+      <div class="rpt-sub" style="margin-top:10px;">Capacity = Operators × Working Minutes ÷ SMV</div>
+      <button class="btn-primary" id="cap-calc-btn" style="margin-top:6px;">CALCULATE</button>
+
+      <div class="calc-result" id="cap-result" style="display:none;">
+        <div class="cr-big" id="cap-pcs">0</div>
+        <div class="cr-tag">PCS FOR THE ESTIMATED PERIOD</div>
+        <div class="cr-breakdown">
+          <div class="cr-row"><span>Date</span><b id="cap-date-out">—</b></div>
+          <div class="cr-row"><span>Capacity per hour (÷60 of working min)</span><b id="cap-perhour">0</b></div>
+          <div class="cr-row"><span>Capacity per minute</span><b id="cap-permin">0</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SMV CALCULATOR ============ -->
+  <div class="page" id="page-calc-smv">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-calc-menu">←</button>
+        <h2>SMV</h2>
+      </div>
+    </div>
+    <div class="form-wrap">
+      <div class="section-label"><span class="bar"></span>INPUTS</div>
+      <div class="card-block">
+        <div class="field"><label>Date</label><input id="smv-date" type="date"></div>
+        <div class="field"><label>Observed Cycle Time (seconds)</label><input id="smv-obs" type="number" step="any" placeholder="e.g. 43"></div>
+        <div class="row2">
+          <div class="field"><label>Performance Rating %</label><input id="smv-rating" type="number" step="any" placeholder="e.g. 100" value="100"></div>
+          <div class="field"><label>Allowance %</label><input id="smv-allow" type="number" step="any" placeholder="e.g. 10" value="10"></div>
+        </div>
+      </div>
+      <div class="rpt-sub" style="margin-top:10px;">Basic Minute = (Observed Time ÷ 60) × (Rating ÷ 100) &nbsp;·&nbsp; SMV = Basic Minute × (1 + Allowance ÷ 100)</div>
+      <button class="btn-primary" id="smv-calc-btn" style="margin-top:6px;">CALCULATE</button>
+
+      <div class="calc-result" id="smv-result" style="display:none;">
+        <div class="cr-big" id="smv-value">0</div>
+        <div class="cr-tag">SMV (MINUTES)</div>
+        <div class="cr-breakdown">
+          <div class="cr-row"><span>Date</span><b id="smv-date-out">—</b></div>
+          <div class="cr-row"><span>Basic Minute Value</span><b id="smv-basic">0</b></div>
+          <div class="cr-row"><span>Allowance Added</span><b id="smv-allowmin">0</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CHANGEOVER TRACKING — SETUP ============ -->
+  <div class="page" id="page-co-setup">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-menu">←</button>
+        <h2>Changeover Tracking</h2>
+      </div>
+      <div class="tb-actions">
+        <button class="chip-btn" id="goCoOngoing">Ongoing Processes<span class="badge-count" id="coOngoingCount">0</span></button>
+      </div>
+    </div>
+    <div class="form-wrap">
+      <div class="section-label"><span class="bar"></span>CHANGEOVER DETAILS</div>
+      <div class="card-block">
+        <div class="field"><label>Date</label><input id="co-date" type="date"></div>
+        <div class="field"><label>IE Name *</label><input id="co-ie" placeholder="e.g. Admin"></div>
+        <div class="row2">
+          <div class="field"><label>Line No *</label><input id="co-line" placeholder="e.g. 5"></div>
+          <div class="field"><label>Style *</label><input id="co-style" placeholder="e.g. PO-2024-POLO"></div>
+        </div>
+        <div class="field"><label>Operator Name *</label><input id="co-operator" placeholder="e.g. Karim Uddin"></div>
+      </div>
+
+      <div class="section-label"><span class="bar"></span>START A PROCESS</div>
+      <div class="card-block">
+        <div class="field"><label>Process Name *</label><input id="co-processname" placeholder="e.g. Needle Change - Station 3"></div>
+      </div>
+      <button class="btn-primary" id="co-start-mech-btn" style="margin-top:6px;">▶ START MECHANIC TIME</button>
+      <div class="empty-hint" id="coStartHint">Starting a process adds it to Ongoing Processes. You can keep starting more processes for this same changeover right away.</div>
+    </div>
+  </div>
+
+  <!-- ============ CHANGEOVER TRACKING — ONGOING / COMPLETED LIST ============ -->
+  <div class="page" id="page-co-list">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-co-setup">←</button>
+        <h2>Processes</h2>
+      </div>
+    </div>
+    <div class="co-tabbar">
+      <button class="tabbtn active" data-cotab="ongoing">🔧 Ongoing</button>
+      <button class="tabbtn" data-cotab="completed">✅ Completed</button>
+    </div>
+    <div class="form-wrap" style="padding-top:14px;">
+      <div id="coListOngoing"></div>
+      <div id="coListCompleted" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ============ CHANGEOVER TRACKING — PROCESS DETAIL ============ -->
+  <div class="page" id="page-co-detail">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-co-list">←</button>
+        <h2>Process Detail</h2>
+      </div>
+    </div>
+    <div class="co-detail-head">
+      <div class="cdh-name" id="coDetailName">—</div>
+      <div class="cdh-sub" id="coDetailSub">—</div>
+    </div>
+    <div class="timeline" id="coTimeline"></div>
+    <div class="total-setting-box" id="coTotalBox" style="display:none;">
+      <div class="tsb-val" id="coTotalVal">0</div>
+      <div class="tsb-label">Total Setting Time (Mechanic Start → Technical End)</div>
+    </div>
+    <input type="file" accept="image/*" capture="environment" id="coPhotoInput" style="display:none;">
+  </div>
+
+  <!-- ============ CAPACITY CHART ============ -->
+  <div class="page" id="page-capacity">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-menu">←</button>
+        <h2>Capacity Chart</h2>
+      </div>
+    </div>
+    <div class="reports-wrap">
+      <div class="rpt-h3">Line-wise Capacity</div>
+      <div class="rpt-sub" id="capacityChartSub">Capacity per line = lowest operation capacity on that line (the bottleneck). Updates automatically with every new study.</div>
+      <div class="chart-box"><canvas id="capacityChart"></canvas></div>
+      <div class="rpt-h3" style="margin-top:18px;">Line Details</div>
+      <div id="capacityLineList"></div>
+      <div class="empty-state" id="capacityEmpty" style="display:none;">
+        <div class="es-ico">📈</div>
+        No study data yet.<br>Run IE Studies on a line to see its capacity here.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CHANGEOVER CALENDAR ============ -->
+  <div class="page" id="page-cal">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="back-btn" data-back="page-menu">←</button>
+        <h2>Changeover Calendar</h2>
+      </div>
+    </div>
+    <div class="cal-nav">
+      <button id="calPrevBtn">‹</button>
+      <div class="cal-month-label" id="calMonthLabel">—</div>
+      <button id="calNextBtn">›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-day-panel">
+      <div class="cal-day-title" id="calDayTitle">Select a date</div>
+      <div id="calEventList"></div>
+      <div class="cal-empty-hint" id="calEmptyHint" style="display:none;">No entries for this date yet.</div>
+      <div class="cal-add-row" id="calAddRow" style="display:none;">
+        <input id="calEntryInput" placeholder="e.g. Line 5 — Style change to PO-2024-POLO" maxlength="120">
+        <button id="calAddBtn">ADD</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   EASY IE — self-contained prototype
+   Data persists in this browser via localStorage.
+   ============================================================ */
+const STORE_KEY = 'ieStudyPro_v1';
+const DEMO_USER = 'admin';
+const DEMO_PASS = 'admin123';
+
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    return raw ? JSON.parse(raw) : { sessions: [] };
+  }catch(e){ return { sessions: [] }; }
+}
+function saveStore(store){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){}
+}
+let STORE = loadStore();
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+document.querySelectorAll('[data-back]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(btn.dataset.back === 'page-co-list') renderCoList();
+    if(btn.dataset.back === 'page-co-setup') updateCoOngoingBadge();
+    showPage(btn.dataset.back);
+  });
+});
+
+/* ---------------- Login ---------------- */
+document.getElementById('togglePw').addEventListener('click', ()=>{
+  const inp = document.getElementById('loginPass');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+});
+document.getElementById('loginBtn').addEventListener('click', ()=>{
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginError');
+  if(u === DEMO_USER && p === DEMO_PASS){
+    err.style.display = 'none';
+    document.getElementById('menuUserName').textContent = u.toUpperCase();
+    document.getElementById('f-officer').value = u.toUpperCase();
+    showPage('page-menu');
+  } else {
+    err.style.display = 'block';
+  }
+});
+document.getElementById('loginUser').value = 'admin';
+document.getElementById('loginPass').value = 'admin123';
+
+document.getElementById('logoutBtn').addEventListener('click', ()=> showPage('page-login'));
+document.getElementById('goStudy').addEventListener('click', ()=>{
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  showPage('page-setup');
+});
+document.getElementById('goReports').addEventListener('click', ()=>{ renderReports(); showPage('page-reports'); });
+
+/* ---------------- Calculations ---------------- */
+document.getElementById('goCalc').addEventListener('click', ()=> showPage('page-calc-menu'));
+document.getElementById('goCalcEfficiency').addEventListener('click', ()=>{
+  if(!document.getElementById('eff-date').value) document.getElementById('eff-date').value = new Date().toISOString().slice(0,10);
+  showPage('page-calc-efficiency');
+});
+document.getElementById('goCalcManpower').addEventListener('click', ()=>{
+  if(!document.getElementById('mp-date').value) document.getElementById('mp-date').value = new Date().toISOString().slice(0,10);
+  showPage('page-calc-manpower');
+});
+document.getElementById('goCalcCapacity').addEventListener('click', ()=>{
+  if(!document.getElementById('cap-date').value) document.getElementById('cap-date').value = new Date().toISOString().slice(0,10);
+  showPage('page-calc-capacity');
+});
+document.getElementById('goCalcSmv').addEventListener('click', ()=>{
+  if(!document.getElementById('smv-date').value) document.getElementById('smv-date').value = new Date().toISOString().slice(0,10);
+  showPage('page-calc-smv');
+});
+
+function numVal(id){ return parseFloat(document.getElementById(id).value); }
+function round2(v){ return Math.round(v*100)/100; }
+
+// Efficiency = (Earned Minutes / Available Minutes) * 100
+// Earned Minutes = Output * SMV ; Available Minutes = Operators * Working Minutes
+document.getElementById('eff-calc-btn').addEventListener('click', ()=>{
+  const output = numVal('eff-output'), smv = numVal('eff-smv'), operators = numVal('eff-operators'), workmin = numVal('eff-workmin');
+  if([output,smv,operators,workmin].some(v=>isNaN(v)||v<=0)){ alert('Please fill in all fields with valid positive numbers.'); return; }
+  const earned = output * smv;
+  const available = operators * workmin;
+  const pct = (earned/available)*100;
+  const box = document.getElementById('eff-result');
+  box.style.display = 'block';
+  box.className = 'calc-result' + (pct>=85 ? '' : pct>=70 ? ' warn' : ' bad');
+  document.getElementById('eff-pct').textContent = round2(pct) + '%';
+  document.getElementById('eff-tag').textContent = pct>=85 ? 'GOOD EFFICIENCY' : pct>=70 ? 'AVERAGE EFFICIENCY' : 'LOW EFFICIENCY';
+  document.getElementById('eff-earned').textContent = round2(earned) + ' min';
+  document.getElementById('eff-available').textContent = round2(available) + ' min';
+  document.getElementById('eff-pct2').textContent = round2(pct) + '%';
+  document.getElementById('eff-date-out').textContent = formatDateDMY(document.getElementById('eff-date').value);
+});
+
+// Manpower = (Target Output * SMV) / Working Minutes
+document.getElementById('mp-calc-btn').addEventListener('click', ()=>{
+  const output = numVal('mp-output'), smv = numVal('mp-smv'), workmin = numVal('mp-workmin');
+  if([output,smv,workmin].some(v=>isNaN(v)||v<=0)){ alert('Please fill in all fields with valid positive numbers.'); return; }
+  const exact = (output*smv)/workmin;
+  const rounded = Math.ceil(exact);
+  const box = document.getElementById('mp-result');
+  box.style.display = 'block';
+  document.getElementById('mp-count').textContent = rounded;
+  document.getElementById('mp-exact').textContent = round2(exact);
+  document.getElementById('mp-rounded').textContent = rounded;
+  document.getElementById('mp-date-out').textContent = formatDateDMY(document.getElementById('mp-date').value);
+});
+
+// Capacity = Operators * Working Minutes / SMV
+document.getElementById('cap-calc-btn').addEventListener('click', ()=>{
+  const operators = numVal('cap-operators'), workmin = numVal('cap-workmin'), smv = numVal('cap-smv');
+  if([operators,workmin,smv].some(v=>isNaN(v)||v<=0)){ alert('Please fill in all fields with valid positive numbers.'); return; }
+  const totalPcs = (operators*workmin)/smv;
+  const perMinute = operators/smv;
+  const perHour = perMinute*60;
+  const box = document.getElementById('cap-result');
+  box.style.display = 'block';
+  document.getElementById('cap-pcs').textContent = Math.round(totalPcs).toLocaleString();
+  document.getElementById('cap-perhour').textContent = round2(perHour) + ' pcs/hr';
+  document.getElementById('cap-permin').textContent = round2(perMinute) + ' pcs/min';
+  document.getElementById('cap-date-out').textContent = formatDateDMY(document.getElementById('cap-date').value);
+});
+
+// SMV = Basic Minute * (1 + Allowance%) ; Basic Minute = (Observed sec / 60) * (Rating%/100)
+document.getElementById('smv-calc-btn').addEventListener('click', ()=>{
+  const obs = numVal('smv-obs'), rating = numVal('smv-rating'), allow = numVal('smv-allow');
+  if([obs,rating,allow].some(v=>isNaN(v)) || obs<=0 || rating<=0){ alert('Please fill in all fields with valid positive numbers.'); return; }
+  const basic = (obs/60) * (rating/100);
+  const smv = basic * (1 + allow/100);
+  const box = document.getElementById('smv-result');
+  box.style.display = 'block';
+  document.getElementById('smv-value').textContent = round2(smv);
+  document.getElementById('smv-basic').textContent = round2(basic) + ' min';
+  document.getElementById('smv-allowmin').textContent = round2(smv-basic) + ' min';
+  document.getElementById('smv-date-out').textContent = formatDateDMY(document.getElementById('smv-date').value);
+});
+
+/* ---------------- Changeover Tracking ---------------- */
+const CO_STORE_KEY = 'changeoverData_v1';
+function loadCO(){
+  try{ const raw = localStorage.getItem(CO_STORE_KEY); return raw ? JSON.parse(raw) : { processes: [] }; }
+  catch(e){ return { processes: [] }; }
+}
+function saveCO(){ try{ localStorage.setItem(CO_STORE_KEY, JSON.stringify(CO)); }catch(e){ alert('Storage is full — try clearing old photos or data.'); } }
+let CO = loadCO();
+let coActiveDetailId = null;
+let coTickInterval = null;
+
+document.getElementById('goChangeover').addEventListener('click', ()=>{
+  updateCoOngoingBadge();
+  if(!document.getElementById('co-date').value) document.getElementById('co-date').value = new Date().toISOString().slice(0,10);
+  showPage('page-co-setup');
+});
+document.getElementById('goCoOngoing').addEventListener('click', ()=>{
+  renderCoList();
+  showPage('page-co-list');
+});
+
+document.getElementById('co-start-mech-btn').addEventListener('click', ()=>{
+  const date = document.getElementById('co-date').value || new Date().toISOString().slice(0,10);
+  const ie = document.getElementById('co-ie').value.trim();
+  const line = document.getElementById('co-line').value.trim();
+  const style = document.getElementById('co-style').value.trim();
+  const operator = document.getElementById('co-operator').value.trim();
+  const processName = document.getElementById('co-processname').value.trim();
+  if(!ie || !line || !style || !operator || !processName){
+    alert('Please fill in all fields (marked *) before starting.');
+    return;
+  }
+  const proc = {
+    id: 'CO' + Date.now() + Math.floor(Math.random()*1000),
+    date: date,
+    ieName: ie, lineNo: line, style: style, operatorName: operator, processName: processName,
+    mechanicStart: Date.now(), mechanicEnd: null, technicalStart: null, technicalEnd: null,
+    status: 'mechanic_running',
+    photos: []
+  };
+  CO.processes.push(proc);
+  saveCO();
+  document.getElementById('co-processname').value = '';
+  document.getElementById('co-processname').focus();
+  updateCoOngoingBadge();
+  document.getElementById('coStartHint').textContent = `"${processName}" started at ${timeLabel(new Date())}. Add another process, or check Ongoing Processes above.`;
+});
+
+function updateCoOngoingBadge(){
+  const n = CO.processes.filter(p=>p.status!=='complete').length;
+  document.getElementById('coOngoingCount').textContent = n;
+}
+
+function renderChangeoverReport(lineFilter){
+  const coLineOk = p => lineMatches(lineFilter, p.lineNo);
+  const completed = CO.processes.filter(p=>p.status==='complete' && coLineOk(p));
+  const ongoingCount = CO.processes.filter(p=>p.status!=='complete' && coLineOk(p)).length;
+  document.getElementById('coSumCount').textContent = completed.length;
+  document.getElementById('coSumOngoing').textContent = ongoingCount;
+  const avg = completed.length ? completed.reduce((a,p)=>a+(p.technicalEnd-p.mechanicStart),0)/completed.length : 0;
+  document.getElementById('coSumAvg').textContent = completed.length ? coDurationLabel(avg) : '0s';
+
+  const tbody = document.querySelector('#changeoverTable tbody');
+  const emptyEl = document.getElementById('changeoverEmpty');
+  if(!completed.length){
+    tbody.innerHTML = '';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  tbody.innerHTML = completed.slice().sort((a,b)=>b.technicalEnd-a.technicalEnd).map(p=>{
+    const total = p.technicalEnd - p.mechanicStart;
+    const t = (ms)=> timeLabel(new Date(ms));
+    return `<tr>
+      <td>${formatDateDMY(p.date)}</td><td>${p.processName}</td><td>${p.lineNo}</td><td>${p.style}</td><td>${p.operatorName}</td><td>${p.ieName}</td>
+      <td>${t(p.mechanicStart)}</td><td>${t(p.mechanicEnd)}</td><td>${t(p.technicalStart)}</td><td>${t(p.technicalEnd)}</td>
+      <td><b>${coDurationLabel(total)}</b></td>
+    </tr>`;
+  }).join('');
+}
+
+function coDurationLabel(ms){
+  const totalSec = Math.floor(ms/1000);
+  const h = Math.floor(totalSec/3600), m = Math.floor((totalSec%3600)/60), s = totalSec%60;
+  if(h>0) return `${h}h ${m}m ${s}s`;
+  if(m>0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+function coStatusLabel(status){
+  return { mechanic_running:'Mechanic Running', mechanic_done:'Mechanic Finish', technical_running:'Technical Running', complete:'Complete' }[status] || status;
+}
+function coStatusClass(status){
+  return { mechanic_running:'mech-run', mechanic_done:'mech-done', technical_running:'tech-run', complete:'complete' }[status] || '';
+}
+
+document.querySelectorAll('[data-cotab]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-cotab]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.cotab;
+    document.getElementById('coListOngoing').style.display = tab==='ongoing' ? 'block' : 'none';
+    document.getElementById('coListCompleted').style.display = tab==='completed' ? 'block' : 'none';
+  });
+});
+
+function renderCoList(){
+  const ongoing = CO.processes.filter(p=>p.status!=='complete').sort((a,b)=>b.mechanicStart-a.mechanicStart);
+  const completed = CO.processes.filter(p=>p.status==='complete').sort((a,b)=>b.technicalEnd-a.technicalEnd);
+
+  const ongoingEl = document.getElementById('coListOngoing');
+  ongoingEl.innerHTML = ongoing.length ? ongoing.map(p=>{
+    const runSince = p.status==='technical_running' ? p.technicalStart : p.mechanicStart;
+    return `<div class="co-process-row" data-open="${p.id}">
+      <div class="cpr-top">
+        <div><div class="cpr-name">${p.processName}</div><div class="cpr-sub">${formatDateDMY(p.date)} · Line ${p.lineNo} · ${p.style} · ${p.operatorName}</div></div>
+        <div class="co-status ${coStatusClass(p.status)}">${coStatusLabel(p.status)}</div>
+      </div>
+      <div class="cpr-timer" data-run-since="${runSince}" data-static="${p.status==='mechanic_done'?'1':'0'}">
+        ${p.status==='mechanic_done' ? 'Awaiting technical start' : coDurationLabel(Date.now()-runSince)}
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty-mini">No ongoing processes. Start one from the Changeover Tracking setup screen.</div>`;
+
+  const completedEl = document.getElementById('coListCompleted');
+  completedEl.innerHTML = completed.length ? completed.map(p=>{
+    const total = p.technicalEnd - p.mechanicStart;
+    return `<div class="co-process-row" data-open="${p.id}">
+      <div class="cpr-top">
+        <div><div class="cpr-name">${p.processName}</div><div class="cpr-sub">${formatDateDMY(p.date)} · Line ${p.lineNo} · ${p.style} · ${p.operatorName}</div></div>
+        <div class="co-status complete">Complete</div>
+      </div>
+      <div class="cpr-timer">Total: ${coDurationLabel(total)}</div>
+    </div>`;
+  }).join('') : `<div class="empty-mini">No completed processes yet.</div>`;
+
+  document.querySelectorAll('[data-open]').forEach(row=>{
+    row.addEventListener('click', ()=> openCoDetail(row.dataset.open));
+  });
+
+  clearInterval(coTickInterval);
+  coTickInterval = setInterval(()=>{
+    document.querySelectorAll('#coListOngoing .cpr-timer[data-static="0"]').forEach(el=>{
+      const since = parseInt(el.dataset.runSince);
+      el.textContent = coDurationLabel(Date.now()-since);
+    });
+  }, 1000);
+}
+
+function findCoProcess(id){ return CO.processes.find(p=>p.id===id); }
+
+function openCoDetail(id){
+  coActiveDetailId = id;
+  renderCoDetail();
+  showPage('page-co-detail');
+}
+
+function renderCoDetail(){
+  const p = findCoProcess(coActiveDetailId);
+  if(!p) return;
+  document.getElementById('coDetailName').textContent = p.processName;
+  document.getElementById('coDetailSub').textContent = `${formatDateDMY(p.date)} · Line ${p.lineNo} · ${p.style} · ${p.operatorName} · IE: ${p.ieName}`;
+
+  const steps = [
+    { key:'mechanicStart', label:'Mechanic Start Time', value:p.mechanicStart, action:null },
+    { key:'mechanicEnd', label:'Mechanic End Time', value:p.mechanicEnd, action: !p.mechanicEnd ? {label:'FINISH MECHANIC TIME', fn:'finishMechanic'} : null },
+    { key:'technicalStart', label:'Technical Start Time', value:p.technicalStart, action: (p.mechanicEnd && !p.technicalStart) ? {label:'START TECHNICAL TIME', fn:'startTechnical'} : null },
+    { key:'technicalEnd', label:'Technical End Time', value:p.technicalEnd, action: (p.technicalStart && !p.technicalEnd) ? {label:'FINISH TECHNICAL TIME', fn:'finishTechnical'} : null },
+  ];
+
+  const tl = document.getElementById('coTimeline');
+  tl.innerHTML = steps.map((s,i)=>{
+    const done = !!s.value;
+    const active = !done && (i===0 || !!steps[i-1].value) && (i < steps.length ? true : false) && s.action;
+    const photosForStep = p.photos.filter(ph=>ph.stage===s.key);
+    const photosHtml = photosForStep.length ? `<div class="tl-photos">${photosForStep.map(ph=>`<img src="${ph.dataUrl}" title="${timeLabel(new Date(ph.ts))}">`).join('')}</div>` : '';
+    const canAddPhoto = (i===0) || !!steps[i-1].value; // can attach once this stage is reachable
+    return `<div class="tl-step ${done?'done':(active?'active':'')}">
+      <div class="tl-dot-wrap"><div class="tl-dot"></div>${i<steps.length-1?'<div class="tl-line"></div>':''}</div>
+      <div class="tl-step-body">
+        <div class="tl-label">${s.label}</div>
+        <div class="tl-time">${s.value ? (formatDateDMY(new Date(s.value).toISOString().slice(0,10)) + ' · ' + timeLabel(new Date(s.value))) : '—'}</div>
+        <div class="tl-actions">
+          ${s.action ? `<button class="tl-btn" data-coaction="${s.action.fn}">${s.action.label}</button>` : ''}
+          ${canAddPhoto ? `<button class="tl-btn photo" data-cophoto="${s.key}">📷 Add Photo</button>` : ''}
+        </div>
+        ${photosHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  const totalBox = document.getElementById('coTotalBox');
+  if(p.status === 'complete'){
+    totalBox.style.display = 'block';
+    document.getElementById('coTotalVal').textContent = coDurationLabel(p.technicalEnd - p.mechanicStart);
+  } else {
+    totalBox.style.display = 'none';
+  }
+
+  tl.querySelectorAll('[data-coaction]').forEach(btn=>{
+    btn.addEventListener('click', ()=> window['co_'+btn.dataset.coaction](p.id));
+  });
+  tl.querySelectorAll('[data-cophoto]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      coPhotoTargetStage = btn.dataset.cophoto;
+      document.getElementById('coPhotoInput').click();
+    });
+  });
+}
+
+function co_finishMechanic(id){
+  const p = findCoProcess(id); if(!p) return;
+  p.mechanicEnd = Date.now(); p.status = 'mechanic_done';
+  saveCO(); updateCoOngoingBadge(); renderCoDetail();
+}
+function co_startTechnical(id){
+  const p = findCoProcess(id); if(!p) return;
+  p.technicalStart = Date.now(); p.status = 'technical_running';
+  saveCO(); updateCoOngoingBadge(); renderCoDetail();
+}
+function co_finishTechnical(id){
+  const p = findCoProcess(id); if(!p) return;
+  p.technicalEnd = Date.now(); p.status = 'complete';
+  saveCO(); updateCoOngoingBadge(); renderCoDetail();
+}
+
+let coPhotoTargetStage = null;
+document.getElementById('coPhotoInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file || !coActiveDetailId) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxW = 700;
+      const scale = Math.min(1, maxW/img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width*scale; canvas.height = img.height*scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      const p = findCoProcess(coActiveDetailId);
+      if(p){
+        p.photos.push({ dataUrl, ts: Date.now(), stage: coPhotoTargetStage });
+        saveCO();
+        renderCoDetail();
+      }
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+/* ---------------- Study Setup ---------------- */
+let currentSession = null;
+document.getElementById('startStudyBtn').addEventListener('click', ()=>{
+  const style = document.getElementById('f-style').value.trim();
+  const line = document.getElementById('f-line').value.trim();
+  const empid = document.getElementById('f-empid').value.trim();
+  const opname = document.getElementById('f-opname').value.trim();
+  const operation = document.getElementById('f-operation').value.trim();
+  if(!style || !line || !empid || !opname || !operation){
+    alert('Please fill all required fields (marked *).');
+    return;
+  }
+  currentSession = {
+    id: 'S' + Date.now(),
+    styleName: style,
+    lineNo: line,
+    date: document.getElementById('f-date').value || new Date().toISOString().slice(0,10),
+    ieOfficer: document.getElementById('f-officer').value.trim() || 'ADMIN',
+    employeeId: empid,
+    sam: parseFloat(document.getElementById('f-sam').value) || null,
+    operatorName: opname,
+    operation: operation,
+    allowance: (function(){ const v = parseFloat(document.getElementById('f-allowance').value); return (!isNaN(v) && v>=0) ? v : 10; })(),
+    machineType: document.getElementById('f-machine').value,
+    readings: [],
+    createdAt: Date.now()
+  };
+  document.getElementById('metaOpName').textContent = opname.toLowerCase();
+  document.getElementById('metaOperation').textContent = operation.toLowerCase();
+  document.getElementById('metaLine').textContent = 'Line ' + line;
+  document.getElementById('metaDate').textContent = formatDateDMY(currentSession.date);
+  resetTimerUI();
+  showPage('page-timer');
+});
+
+/* ---------------- Stopwatch ---------------- */
+let timerState = 'ready'; // ready | running | paused
+let elapsedMs = 0;
+let lastTickTs = 0;
+let rafId = null;
+let lastReadingStartMs = 0;
+
+function fmtTime(ms){
+  const totalCs = Math.floor(ms / 10);
+  const m = Math.floor(totalCs / 6000);
+  const s = Math.floor((totalCs % 6000) / 100);
+  const cs = totalCs % 100;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + '.' + String(cs).padStart(2,'0');
+}
+function tick(ts){
+  if(timerState !== 'running') return;
+  if(!lastTickTs) lastTickTs = ts;
+  elapsedMs += ts - lastTickTs;
+  lastTickTs = ts;
+  document.getElementById('bigTime').textContent = fmtTime(elapsedMs);
+  const secAngle = ((elapsedMs / 1000) % 60) / 60 * 360;
+  document.getElementById('secHand').setAttribute('transform', `rotate(${secAngle} 110 110)`);
+  rafId = requestAnimationFrame(tick);
+}
+function resetTimerUI(){
+  timerState = 'ready'; elapsedMs = 0; lastTickTs = 0; lastReadingStartMs = 0;
+  cancelAnimationFrame(rafId);
+  document.getElementById('bigTime').textContent = '00:00.00';
+  document.getElementById('statusLabel').textContent = 'READY';
+  document.getElementById('secHand').setAttribute('transform','rotate(0 110 110)');
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('pauseBtn').disabled = true;
+  document.getElementById('pauseBtn').textContent = '❚❚ PAUSE';
+  document.getElementById('recordBtn').disabled = true;
+  document.getElementById('readingsList').innerHTML = '';
+  document.getElementById('readingsEmptyHint').style.display = 'block';
+  updateTimerStats();
+}
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  if(timerState === 'running') return;
+  timerState = 'running';
+  lastTickTs = 0;
+  document.getElementById('statusLabel').textContent = 'RUNNING';
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('pauseBtn').disabled = false;
+  document.getElementById('pauseBtn').textContent = '❚❚ PAUSE';
+  document.getElementById('recordBtn').disabled = false;
+  rafId = requestAnimationFrame(tick);
+});
+// PAUSE now only pauses/resumes the clock — it does NOT record a reading.
+document.getElementById('pauseBtn').addEventListener('click', ()=>{
+  if(timerState === 'running'){
+    timerState = 'paused';
+    cancelAnimationFrame(rafId);
+    document.getElementById('statusLabel').textContent = 'PAUSED';
+    document.getElementById('pauseBtn').textContent = '▶ RESUME';
+    document.getElementById('recordBtn').disabled = true;
+  } else if(timerState === 'paused'){
+    timerState = 'running';
+    lastTickTs = 0;
+    document.getElementById('statusLabel').textContent = 'RUNNING';
+    document.getElementById('pauseBtn').textContent = '❚❚ PAUSE';
+    document.getElementById('recordBtn').disabled = false;
+    rafId = requestAnimationFrame(tick);
+  }
+});
+// RECORD logs one cycle reading without stopping the clock.
+// 1st record: start = when START was pressed, end = when RECORD is pressed.
+// Every following record: start = previous RECORD press, end = this RECORD press.
+document.getElementById('recordBtn').addEventListener('click', ()=>{
+  if(timerState !== 'running') return;
+  const readingEndMs = elapsedMs;
+  const durationSec = Math.round((readingEndMs - lastReadingStartMs) / 100) / 10; // 1 decimal
+  const n = currentSession.readings.length + 1;
+  const startClock = new Date(currentSession.createdAt + lastReadingStartMs);
+  const endClock = new Date(currentSession.createdAt + readingEndMs);
+  currentSession.readings.push({
+    n, duration: durationSec,
+    startLabel: timeLabel(startClock), endLabel: timeLabel(endClock)
+  });
+  lastReadingStartMs = readingEndMs;
+  renderReadingsList();
+  updateTimerStats();
+});
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!currentSession) return;
+  if(currentSession.readings.length && !confirm('Reset will clear the current in-progress readings. Continue?')) return;
+  currentSession.readings = [];
+  resetTimerUI();
+});
+document.getElementById('finishBtn').addEventListener('click', ()=>{
+  if(!currentSession || !currentSession.readings.length) return;
+  STORE.sessions.push(currentSession);
+  saveStore(STORE);
+  alert('Session saved: ' + currentSession.readings.length + ' readings.');
+  currentSession = null;
+  showPage('page-menu');
+});
+
+function timeLabel(d){
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
+}
+function ordinal(n){
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+function renderReadingsList(){
+  const list = document.getElementById('readingsList');
+  const hint = document.getElementById('readingsEmptyHint');
+  list.innerHTML = '';
+  currentSession.readings.slice().reverse().forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'reading-row';
+    row.innerHTML = `<div class="rn">${r.n}</div>
+      <div class="rmeta"><div class="rtitle">${ordinal(r.n)} Reading</div><div class="rtime">${r.startLabel} – ${r.endLabel}</div></div>
+      <div class="rdur">${r.duration}s</div>`;
+    list.appendChild(row);
+  });
+  hint.style.display = currentSession.readings.length ? 'none' : 'block';
+  document.getElementById('finishBtn').disabled = currentSession.readings.length === 0;
+  document.getElementById('finishCount').textContent = currentSession.readings.length;
+}
+function updateTimerStats(){
+  const readings = currentSession ? currentSession.readings : [];
+  document.getElementById('statReadings').textContent = readings.length;
+  if(readings.length){
+    const avg = readings.reduce((a,r)=>a+r.duration,0) / readings.length;
+    const best = Math.min(...readings.map(r=>r.duration));
+    document.getElementById('statAvg').textContent = round1(avg) + 's';
+    document.getElementById('statBest').textContent = round1(best) + 's';
+  } else {
+    document.getElementById('statAvg').textContent = '0s';
+    document.getElementById('statBest').textContent = '0s';
+  }
+}
+function round1(v){ return Math.round(v*10)/10; }
+function formatDateDMY(iso){
+  if(!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+// draw clock ticks
+(function drawTicks(){
+  const g = document.getElementById('ticks');
+  for(let i=0;i<60;i++){
+    const angle = i*6*Math.PI/180;
+    const isMajor = i % 5 === 0;
+    const r1 = isMajor ? 90 : 96;
+    const r2 = 100;
+    const x1 = 110 + r1*Math.sin(angle), y1 = 110 - r1*Math.cos(angle);
+    const x2 = 110 + r2*Math.sin(angle), y2 = 110 - r2*Math.cos(angle);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+    line.setAttribute('stroke', isMajor ? '#16234f' : '#c7d0dd');
+    line.setAttribute('stroke-width', isMajor ? 2 : 1);
+    g.appendChild(line);
+  }
+})();
+
+/* ---------------- Reports ---------------- */
+document.getElementById('exportExcelBtn').addEventListener('click', exportExcel);
+document.getElementById('clearDataBtn').addEventListener('click', ()=>{
+  if(!STORE.sessions.length) return;
+  if(confirm('This will permanently delete all saved study sessions. Continue?')){
+    STORE = { sessions: [] };
+    saveStore(STORE);
+    renderReports();
+  }
+});
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['table','yamazumi','bulletin','changeover'].forEach(t=>{
+      document.getElementById('tab-'+t).style.display = (t === btn.dataset.tab) ? 'block' : 'none';
+    });
+  });
+});
+
+function lineMatches(lineFilter, sessionLine){
+  return !lineFilter || lineFilter === 'all' || sessionLine === lineFilter;
+}
+function sessionAllowance(s){
+  return (s.allowance != null && !isNaN(s.allowance)) ? s.allowance : 10;
+}
+function allReadingsFlat(lineFilter){
+  const out = [];
+  STORE.sessions.filter(s=>lineMatches(lineFilter, s.lineNo)).forEach(s=>{
+    s.readings.forEach(r=>{
+      out.push({ date: s.date, operator: s.operatorName, operation: s.operation, lineNo: s.lineNo, n: r.n, start: r.startLabel, end: r.endLabel, duration: r.duration, session: s });
+    });
+  });
+  return out;
+}
+function groupByOperation(lineFilter){
+  const groups = {};
+  STORE.sessions.filter(s=>lineMatches(lineFilter, s.lineNo)).forEach(s=>{
+    const key = s.operation + '||' + s.operatorName + '||' + s.employeeId;
+    if(!groups[key]) groups[key] = { operation: s.operation, operator: s.operatorName, employeeId: s.employeeId, sam: s.sam, lineNo: s.lineNo, allowance: sessionAllowance(s), readings: [] };
+    groups[key].readings.push(...s.readings.map(r=>r.duration));
+  });
+  return Object.values(groups);
+}
+function allowFactor(g){ return 1 + (g.allowance!=null && !isNaN(g.allowance) ? g.allowance : 10)/100; }
+let yamazumiChartInst = null;
+function populateLineFilter(){
+  const sel = document.getElementById('reportLineFilter');
+  const current = sel.value || 'all';
+  const lines = new Set();
+  STORE.sessions.forEach(s=> s.lineNo && lines.add(s.lineNo));
+  CO.processes.forEach(p=> p.lineNo && lines.add(p.lineNo));
+  const sorted = Array.from(lines).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
+  sel.innerHTML = '<option value="all">All Lines</option>' + sorted.map(l=>`<option value="${l}">Line ${l}</option>`).join('');
+  sel.value = (current === 'all' || sorted.includes(current)) ? current : 'all';
+}
+function renderReports(){
+  populateLineFilter();
+  const lineFilter = document.getElementById('reportLineFilter').value || 'all';
+  const flat = allReadingsFlat(lineFilter);
+  const sessionsForLine = STORE.sessions.filter(s=>lineMatches(lineFilter, s.lineNo));
+  const coForLine = CO.processes.filter(p=>lineMatches(lineFilter, p.lineNo));
+  const empty = document.getElementById('reportsEmpty');
+  document.getElementById('ieSummaryCards').style.display = sessionsForLine.length ? 'flex' : 'none';
+  document.querySelector('.tabbar').style.display = (sessionsForLine.length || coForLine.length) ? 'flex' : 'none';
+  ['tab-table','tab-yamazumi','tab-bulletin','tab-changeover'].forEach(id=> document.getElementById(id).style.display = 'none');
+  renderChangeoverReport(lineFilter);
+  if(!sessionsForLine.length && !coForLine.length){
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  if(sessionsForLine.length){
+    document.getElementById('tab-table').style.display = 'block';
+    document.querySelector('.tabbtn[data-tab="table"]').classList.add('active');
+  } else {
+    document.getElementById('tab-changeover').style.display = 'block';
+    document.querySelector('.tabbtn[data-tab="changeover"]').classList.add('active');
+  }
+
+  // summary cards
+  document.getElementById('sumSessions').textContent = sessionsForLine.length;
+  document.getElementById('sumReadings').textContent = flat.length;
+  const overallAvg = flat.length ? flat.reduce((a,r)=>a+r.duration,0)/flat.length : 0;
+  document.getElementById('sumAvgCt').textContent = round1(overallAvg) + 's';
+
+  // data table
+  const tbody = document.querySelector('#readingsTable tbody');
+  tbody.innerHTML = flat.slice().reverse().map(r=>
+    `<tr><td>${formatDateDMY(r.date)}</td><td>${r.operator}</td><td>${r.operation}</td><td>${r.n}</td><td>${r.start}</td><td>${r.end}</td><td>${r.duration}</td></tr>`
+  ).join('');
+
+  // yamazumi chart
+  const groups = groupByOperation(lineFilter);
+  const labels = groups.map(g=>g.operation);
+  const avgs = groups.map(g=> round1(g.readings.reduce((a,b)=>a+b,0)/g.readings.length));
+  const overall = avgs.length ? round1(avgs.reduce((a,b)=>a+b,0)/avgs.length) : 0;
+  document.getElementById('yamazumiSub').textContent = `Average cycle time by operation · Reference line at overall avg ${overall}s`;
+  try{
+    if(yamazumiChartInst) yamazumiChartInst.destroy();
+    yamazumiChartInst = new Chart(document.getElementById('yamazumiChart'), {
+      type: 'bar',
+      data: { labels, datasets: [
+        { label:'Avg CT (s)', data: avgs, backgroundColor:'#16234f', borderRadius:4 },
+        { label:'Reference', data: labels.map(()=>overall), type:'line', borderColor:'#dc4b4b', borderDash:[5,4], pointRadius:0, borderWidth:1.5 }
+      ]},
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{ y:{ beginAtZero:true, ticks:{ color:'#667085' }, grid:{ color:'#eef1f5' } },
+                  x:{ ticks:{ color:'#667085', font:{size:9}, maxRotation:40 }, grid:{ display:false } } }
+      }
+    });
+  }catch(e){ /* chart lib unavailable offline — table/list data below still renders */ }
+
+  // operation summary list + capacity per operation (using each operation's own allowance %)
+  const opList = document.getElementById('opSummaryList');
+  const opCaps = [];
+  opList.innerHTML = groups.map((g,i)=>{
+    const avg = g.readings.reduce((a,b)=>a+b,0)/g.readings.length;
+    const af = allowFactor(g);
+    const cap = Math.round(3600 / (avg*af));
+    opCaps.push({ operation: g.operation, cap });
+    return `<div class="op-summary-row">
+      <div class="osn">${i+1}</div>
+      <div class="osmeta"><div class="ostitle">${g.operation}</div><div class="ossub">${g.readings.length} readings · ${g.operator} · Allowance ${g.allowance}%</div></div>
+      <div class="osright"><div class="osct">${round1(avg)}s <span style="color:#98a2b3;font-weight:500;">+${g.allowance}%: ${round1(avg*af)}s</span></div><div class="oscap">${cap} cap/hr</div></div>
+    </div>`;
+  }).join('');
+
+  // line capacity = lowest-capacity (bottleneck) operation among those shown
+  const lineCapBox = document.getElementById('lineCapBox');
+  if(opCaps.length){
+    const bottleneck = opCaps.reduce((min,c)=> c.cap < min.cap ? c : min, opCaps[0]);
+    lineCapBox.style.display = 'block';
+    document.getElementById('lineCapVal').textContent = bottleneck.cap.toLocaleString();
+    document.getElementById('lineCapSub').textContent = `Bottleneck operation: ${bottleneck.operation}` + (lineFilter !== 'all' ? ` · Line ${lineFilter}` : ' · across all lines shown — pick a line above for an exact line capacity');
+  } else {
+    lineCapBox.style.display = 'none';
+  }
+
+  // line balancing bulletin
+  const btbody = document.querySelector('#bulletinTable tbody');
+  btbody.innerHTML = groups.map((g,i)=>{
+    const avg = g.readings.reduce((a,b)=>a+b,0)/g.readings.length;
+    const af = allowFactor(g);
+    const allow = avg*af;
+    const cap = Math.round(3600/allow);
+    const ct = [0,1,2,3,4].map(idx => g.readings[idx] !== undefined ? g.readings[idx] : '');
+    const eff = g.sam ? Math.round((g.sam*60/avg)*100) : '';
+    return `<tr>
+      <td>${i+1}</td><td>${g.operation}</td><td>${g.employeeId}</td><td>${g.operator}</td>
+      <td>${ct[0]}</td><td>${ct[1]}</td><td>${ct[2]}</td><td>${ct[3]}</td><td>${ct[4]}</td>
+      <td><b>${round1(avg)}</b></td><td>${round1(allow)} (+${g.allowance}%)</td><td>${cap}</td><td>${g.sam ?? ''}</td><td>${eff!=='' ? eff+'%' : ''}</td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('reportLineFilter').addEventListener('change', renderReports);
+
+function currentReportLine(){ return document.getElementById('reportLineFilter').value || 'all'; }
+function buildDataTableRows(lineFilter){
+  return allReadingsFlat(lineFilter).map(r=>({ Date: r.date, Line: r.lineNo, Operator: r.operator, Operation: r.operation, '#': r.n, Start: r.start, End: r.end, 'CT (s)': r.duration }));
+}
+function buildBulletinRows(lineFilter){
+  return groupByOperation(lineFilter).map((g,i)=>{
+    const avg = g.readings.reduce((a,b)=>a+b,0)/g.readings.length;
+    const af = allowFactor(g);
+    const allow = avg*af;
+    const cap = Math.round(3600/allow);
+    const eff = g.sam ? Math.round((g.sam*60/avg)*100) : '';
+    return {
+      'S.No': i+1, Line: g.lineNo, Operation: g.operation, 'Card No': g.employeeId, Name: g.operator,
+      CT1: g.readings[0] ?? '', CT2: g.readings[1] ?? '', CT3: g.readings[2] ?? '', CT4: g.readings[3] ?? '', CT5: g.readings[4] ?? '',
+      'Avg CT': round1(avg), 'Allowance %': g.allowance, 'Allowed CT': round1(allow), 'Capacity/hr': cap, SAM: g.sam ?? '', 'Eff%': eff
+    };
+  });
+}
+function buildYamazumiRows(lineFilter){
+  return groupByOperation(lineFilter).map(g=>{
+    const avg = g.readings.reduce((a,b)=>a+b,0)/g.readings.length;
+    const af = allowFactor(g);
+    return { Line: g.lineNo, Operation: g.operation, Operator: g.operator, Readings: g.readings.length, 'Avg CT (s)': round1(avg), 'Allowance %': g.allowance, 'Allowed CT (s)': round1(avg*af), 'Capacity/hr': Math.round(3600/(avg*af)) };
+  });
+}
+function buildChangeoverRows(lineFilter){
+  const t = (ms)=> timeLabel(new Date(ms));
+  return CO.processes.filter(p=>p.status==='complete' && lineMatches(lineFilter, p.lineNo)).map(p=>({
+    Date: formatDateDMY(p.date), Process: p.processName, Line: p.lineNo, Style: p.style, Operator: p.operatorName, IE: p.ieName,
+    'Mechanic Start': t(p.mechanicStart), 'Mechanic End': t(p.mechanicEnd),
+    'Technical Start': t(p.technicalStart), 'Technical End': t(p.technicalEnd),
+    'Total Setting Time': coDurationLabel(p.technicalEnd - p.mechanicStart)
+  }));
+}
+function exportSingleSheet(rows, sheetName, emptyMsg){
+  if(!rows.length){ alert(emptyMsg); return; }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), sheetName);
+  XLSX.writeFile(wb, `Easy_IE_${sheetName.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+document.getElementById('exportTableBtn').addEventListener('click', ()=> exportSingleSheet(buildDataTableRows(currentReportLine()), 'Cycle Readings', 'No cycle readings to export yet.'));
+document.getElementById('exportYamazumiBtn').addEventListener('click', ()=> exportSingleSheet(buildYamazumiRows(currentReportLine()), 'Yamazumi Summary', 'No operation data to export yet.'));
+document.getElementById('exportBulletinBtn').addEventListener('click', ()=> exportSingleSheet(buildBulletinRows(currentReportLine()), 'Line Balancing Sheet', 'No operation data to export yet.'));
+document.getElementById('exportChangeoverBtn').addEventListener('click', ()=> exportSingleSheet(buildChangeoverRows(currentReportLine()), 'Changeover Report', 'No completed changeover processes to export yet.'));
+
+function exportExcel(){
+  const dataRows = buildDataTableRows();
+  const completedCO = CO.processes.filter(p=>p.status==='complete');
+  if(!dataRows.length && !completedCO.length){ alert('No data to export yet.'); return; }
+  const wb = XLSX.utils.book_new();
+
+  if(dataRows.length){
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataRows), 'Cycle Readings');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(buildBulletinRows()), 'Line Balancing Sheet');
+  }
+  if(completedCO.length){
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(buildChangeoverRows()), 'Changeover Report');
+  }
+
+  XLSX.writeFile(wb, `Easy_IE_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* ---------------- Capacity Chart (line-wise, always live) ---------------- */
+let capacityChartInst = null;
+function computeLineCapacities(){
+  const byLine = {};
+  STORE.sessions.forEach(s=>{
+    const line = s.lineNo || 'Unspecified';
+    if(!byLine[line]) byLine[line] = {};
+    const opKey = s.operation + '||' + s.operatorName + '||' + s.employeeId;
+    if(!byLine[line][opKey]) byLine[line][opKey] = { operation: s.operation, allowance: sessionAllowance(s), readings: [] };
+    byLine[line][opKey].readings.push(...s.readings.map(r=>r.duration));
+  });
+  const result = [];
+  Object.keys(byLine).forEach(line=>{
+    const ops = Object.values(byLine[line]).map(g=>{
+      const avg = g.readings.reduce((a,b)=>a+b,0)/g.readings.length;
+      const cap = Math.round(3600/(avg*allowFactor(g)));
+      return { operation: g.operation, cap };
+    });
+    if(!ops.length) return;
+    const bottleneck = ops.reduce((min,o)=> o.cap < min.cap ? o : min, ops[0]);
+    result.push({ line, capacity: bottleneck.cap, bottleneckOp: bottleneck.operation, opCount: ops.length });
+  });
+  result.sort((a,b)=> String(a.line).localeCompare(String(b.line), undefined, {numeric:true}));
+  return result;
+}
+function renderCapacityChart(){
+  const data = computeLineCapacities();
+  document.getElementById('capacityEmpty').style.display = data.length ? 'none' : 'block';
+  const labels = data.map(d=>'Line ' + d.line);
+  const caps = data.map(d=>d.capacity);
+  try{
+    if(capacityChartInst) capacityChartInst.destroy();
+    capacityChartInst = new Chart(document.getElementById('capacityChart'), {
+      type: 'bar',
+      data: { labels, datasets: [{ label:'Line Capacity (pcs/hr)', data: caps, backgroundColor:'#128a3e', borderRadius:4 }] },
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false} },
+        scales:{ y:{ beginAtZero:true, ticks:{ color:'#667085' }, grid:{ color:'#eef1f5' } },
+                  x:{ ticks:{ color:'#667085', font:{size:10} }, grid:{ display:false } } }
+      }
+    });
+  }catch(e){ /* chart lib unavailable offline — line list below still renders */ }
+  document.getElementById('capacityLineList').innerHTML = data.map(d=>
+    `<div class="cap-line-row">
+      <div class="cln">LINE ${d.line}</div>
+      <div class="clmeta"><div class="cltitle">Line ${d.line}</div><div class="clsub">Bottleneck: ${d.bottleneckOp} · ${d.opCount} operation${d.opCount>1?'s':''} studied</div></div>
+      <div class="clright">${d.capacity.toLocaleString()}<span class="clunit">PCS/HR</span></div>
+    </div>`
+  ).join('');
+}
+document.getElementById('goCapacityChart').addEventListener('click', ()=>{
+  renderCapacityChart();
+  showPage('page-capacity');
+});
+
+/* ---------------- Changeover Calendar ---------------- */
+const CAL_STORE_KEY = 'changeoverCalendar_v1';
+function loadCal(){
+  try{ const raw = localStorage.getItem(CAL_STORE_KEY); return raw ? JSON.parse(raw) : { events: [] }; }
+  catch(e){ return { events: [] }; }
+}
+function saveCal(){ try{ localStorage.setItem(CAL_STORE_KEY, JSON.stringify(CAL)); }catch(e){} }
+let CAL = loadCal();
+let calViewYear = null, calViewMonth = null, calSelectedDate = null;
+const CAL_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function pad2(n){ return String(n).padStart(2,'0'); }
+function calDateKey(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; }
+
+document.getElementById('goChangeoverCalendar').addEventListener('click', ()=>{
+  const now = new Date();
+  calViewYear = now.getFullYear();
+  calViewMonth = now.getMonth();
+  calSelectedDate = calDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+  renderCalendar();
+  showPage('page-cal');
+});
+
+function renderCalendar(){
+  document.getElementById('calMonthLabel').textContent = `${CAL_MONTH_NAMES[calViewMonth]} ${calViewYear}`;
+  const grid = document.getElementById('calGrid');
+  const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = dowNames.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const firstDay = new Date(calViewYear, calViewMonth, 1).getDay();
+  const daysInMonth = new Date(calViewYear, calViewMonth+1, 0).getDate();
+  const now = new Date();
+  const todayKey = calDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+  for(let i=0;i<firstDay;i++) html += `<div class="cal-cell blank"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const key = calDateKey(calViewYear, calViewMonth, d);
+    const hasEvents = CAL.events.some(e=>e.date===key);
+    const classes = ['cal-cell'];
+    if(key === todayKey) classes.push('today');
+    if(key === calSelectedDate) classes.push('selected');
+    html += `<div class="${classes.join(' ')}" data-date="${key}">${d}${hasEvents ? '<div class="cal-dot"></div>' : ''}</div>`;
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('[data-date]').forEach(cell=>{
+    cell.addEventListener('click', ()=>{
+      calSelectedDate = cell.dataset.date;
+      renderCalendar();
+    });
+  });
+  renderCalDay();
+}
+
+function renderCalDay(){
+  const titleEl = document.getElementById('calDayTitle');
+  const listEl = document.getElementById('calEventList');
+  const emptyEl = document.getElementById('calEmptyHint');
+  const addRow = document.getElementById('calAddRow');
+  if(!calSelectedDate){
+    titleEl.textContent = 'Select a date';
+    listEl.innerHTML = '';
+    emptyEl.style.display = 'none';
+    addRow.style.display = 'none';
+    return;
+  }
+  const [y,m,d] = calSelectedDate.split('-');
+  titleEl.textContent = `${d}/${m}/${y}`;
+  addRow.style.display = 'flex';
+  const dayEvents = CAL.events.filter(e=>e.date===calSelectedDate).sort((a,b)=>a.createdAt-b.createdAt);
+  emptyEl.style.display = dayEvents.length ? 'none' : 'block';
+  listEl.innerHTML = dayEvents.map(e=>
+    `<div class="cal-event-row"><div class="cev-text">${e.text}</div><button class="cev-del" data-delid="${e.id}" title="Delete">🗑</button></div>`
+  ).join('');
+  listEl.querySelectorAll('[data-delid]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      CAL.events = CAL.events.filter(e=>e.id !== btn.dataset.delid);
+      saveCal();
+      renderCalendar();
+    });
+  });
+}
+
+document.getElementById('calPrevBtn').addEventListener('click', ()=>{
+  calViewMonth--;
+  if(calViewMonth < 0){ calViewMonth = 11; calViewYear--; }
+  renderCalendar();
+});
+document.getElementById('calNextBtn').addEventListener('click', ()=>{
+  calViewMonth++;
+  if(calViewMonth > 11){ calViewMonth = 0; calViewYear++; }
+  renderCalendar();
+});
+document.getElementById('calAddBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('calEntryInput');
+  const text = input.value.trim();
+  if(!text || !calSelectedDate) return;
+  CAL.events.push({ id: 'CAL'+Date.now()+Math.floor(Math.random()*1000), date: calSelectedDate, text, createdAt: Date.now() });
+  saveCal();
+  input.value = '';
+  renderCalendar();
+});
+document.getElementById('calEntryInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('calAddBtn').click(); }
+});
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>
